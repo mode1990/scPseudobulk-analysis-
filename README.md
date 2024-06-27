@@ -1,6 +1,5 @@
 # scPseudobulk-analysis-
 Automated pipeline for psuedobulk analysis and downstream unsupervised analysis based on seurat v5
-Sure, here is a README.md file for your automated pipeline.
 
 ```markdown
 # Pseudobulk Analysis Pipeline with Seurat v5
