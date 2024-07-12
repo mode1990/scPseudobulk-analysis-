@@ -165,9 +165,4 @@ run_pca <- function(correlation_matrix) {
 }
 ```
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
-This README provides an overview of the pipeline, instructions for setup and usage, and a brief description of each function. Make sure to update any placeholders such as file paths or repository URLs with the correct information specific to your setup.
+ 
