@@ -68,11 +68,10 @@ load_data <- function(file_path) {
 }
 
 
-### 2. Prepare Data
-
 The `prepare_data` function subsets the Seurat object based on specified cell types and normalizes the data.
 
 ```r
+
 prepare_data <- function(seurat_obj, cell_types, assay_type = "RNA") {
   Idents(seurat_obj) <- seurat_obj$CellType
   seurat_obj <- subset(seurat_obj, idents = cell_types)
