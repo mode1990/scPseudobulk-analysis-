@@ -56,7 +56,6 @@ This repository contains an automated pipeline for pseudobulk analysis and downs
     Rscript main.R
     ```
 
-## Pipeline Steps
 
 ### 1. Load Data
 
