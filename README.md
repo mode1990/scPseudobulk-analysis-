@@ -1,103 +1,121 @@
-# scPseudobulk-analysis-
-Automated pipeline for psuedobulk analysis and downstream unsupervised analysis based on seurat v5
 
-```markdown
-# Pseudobulk Analysis Pipeline with Seurat v5
+# 🧬 scPseudobulk-analysis
 
-This repository contains an automated pipeline for pseudobulk analysis and downstream unsupervised analysis using Seurat v5. The pipeline includes normalization, pseudobulk creation, clustering, heatmap generation, and principal component analysis (PCA).
+**scPseudobulk-analysis** is an automated R pipeline designed for generating pseudobulk expression profiles from single-cell RNA-seq data and performing downstream unsupervised analyses using [Seurat v5](https://satijalab.org/seurat/). It includes steps such as data loading, normalization, pseudobulk aggregation, clustering, heatmap visualization, and principal component analysis (PCA).
 
-## Table of Contents
+---
+
+## 📦 Features
+
+- Easy integration with Seurat v5 objects (`.rds`)
+- Customizable pseudobulk aggregation (e.g., by clone, sample, condition)
+- Unsupervised K-means clustering
+- Correlation heatmap plotting
+- PCA with explained variance reporting
+
+---
+
+## 🗂️ Table of Contents
 
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Pipeline Steps](#pipeline-steps)
+- [Pipeline Overview](#pipeline-overview)
   - [1. Load Data](#1-load-data)
   - [2. Prepare Data](#2-prepare-data)
   - [3. Create Pseudobulk](#3-create-pseudobulk)
-  - [4. Save and Load Pseudobulk](#4-save-and-load-pseudobulk)
-  - [5. Perform K-means Clustering](#5-perform-k-means-clustering)
-  - [6. Plot K-means Clustering Result](#6-plot-k-means-clustering-result)
-  - [7. Calculate and Plot Heatmap](#7-calculate-and-plot-heatmap)
-  - [8. Run PCA and Print Variance](#8-run-pca-and-print-variance)
+  - [4. Save/Load Pseudobulk](#4-saveload-pseudobulk)
+  - [5. K-means Clustering](#5-k-means-clustering)
+  - [6. Visualize Clusters](#6-visualize-clusters)
+  - [7. Correlation Heatmap](#7-correlation-heatmap)
+  - [8. PCA Analysis](#8-pca-analysis)
 
-## Requirements
+---
 
-- R (version >= 4.0.0)
-- The following R packages:
-  - Seurat
-  - ggpubr
-  - factoextra
-  - FactoMineR
+## 🧰 Requirements
 
-## Installation
+- R ≥ 4.0.0
+- R packages:
+  - `Seurat`
+  - `ggpubr`
+  - `factoextra`
+  - `FactoMineR`
+
+---
+
+## 🛠️ Installation
 
 1. Install R from [CRAN](https://cran.r-project.org/).
+
 2. Install the required R packages:
 
-    ```r
-    install.packages(c("Seurat", "ggpubr", "factoextra", "FactoMineR"))
-    ```
-
-3. Clone this repository:
-
-    ```sh
-    git clone https://github.com/yourusername/pseudobulk-analysis-pipeline.git
-    cd pseudobulk-analysis-pipeline
-    ```
-
-## Usage
-
-1. Place your input Seurat object file (`.rds` format) in the repository directory.
-2. Modify the `main.R` script to set the correct file paths and parameters (input file path, cell types, assay type, number of clusters).
-3. Run the pipeline:
-
-    ```sh
-    Rscript main.R
-    ```
+```r
+install.packages(c("Seurat", "ggpubr", "factoextra", "FactoMineR"))
 ```
 
+3. Clone the repository:
+
+```sh
+git clone https://github.com/yourusername/scPseudobulk-analysis.git
+cd scPseudobulk-analysis
+```
+
+---
+
+## 🚀 Usage
+
+1. Place your input `.rds` Seurat object into the project directory.
+2. Edit `main.R` to specify:
+   - Input file path
+   - Cell types of interest
+   - Assay type (e.g., "RNA")
+   - Number of clusters
+3. Run the pipeline:
+
+```sh
+Rscript main.R
+```
+
+---
+
+## 🔄 Pipeline Overview
 
 ### 1. Load Data
 
-The `load_data` function reads the Seurat object from the specified file path.
-
 ```r
 load_data <- function(file_path) {
-  return(readRDS(file_path))
+  readRDS(file_path)
 }
+```
 
+### 2. Prepare Data
 
-The `prepare_data` function subsets the Seurat object based on specified cell types and normalizes the data.
+Subsets the Seurat object to specific cell types and normalizes expression.
 
-
-
+```r
 prepare_data <- function(seurat_obj, cell_types, assay_type = "RNA") {
   Idents(seurat_obj) <- seurat_obj$CellType
   seurat_obj <- subset(seurat_obj, idents = cell_types)
   DefaultAssay(seurat_obj) <- assay_type
-  seurat_obj <- NormalizeData(seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000, assay = assay_type)
-  return(seurat_obj)
+  NormalizeData(seurat_obj, normalization.method = "LogNormalize", scale.factor = 10000)
 }
 ```
 
 ### 3. Create Pseudobulk
 
-The `create_pseudobulk` function averages expression data to create a pseudobulk Seurat object.
+Aggregates expression per group (e.g., per clone or sample) into a pseudobulk object.
 
 ```r
-create_pseudobulk <- function(seurat_obj, group_by = 'Clone') {
+create_pseudobulk <- function(seurat_obj, group_by = "Clone") {
   s.bulk <- AverageExpression(seurat_obj, return.seurat = TRUE, group.by = group_by)
   s.bulk <- FindVariableFeatures(s.bulk)
   s.bulk <- ScaleData(s.bulk)
-  s.bulk <- RunPCA(s.bulk, features = VariableFeatures(object = s.bulk), npcs = 10)
-  return(s.bulk)
+  s.bulk <- RunPCA(s.bulk, features = VariableFeatures(s.bulk), npcs = 10)
+  s.bulk
 }
 ```
 
-### 4. Save and Load Pseudobulk
-
-Functions to save and load the pseudobulk Seurat object.
+### 4. Save/Load Pseudobulk
 
 ```r
 save_pseudobulk <- function(s.bulk, file_path) {
@@ -105,53 +123,44 @@ save_pseudobulk <- function(s.bulk, file_path) {
 }
 
 load_pseudobulk <- function(file_path) {
-  return(readRDS(file_path))
+  readRDS(file_path)
 }
 ```
 
-### 5. Perform K-means Clustering
-
-The `perform_kmeans` function performs K-means clustering on the pseudobulk data.
+### 5. K-means Clustering
 
 ```r
 perform_kmeans <- function(s.bulk, assay = "RNA", num_clusters = 5) {
-  exp <- GetAssayData(object = s.bulk, assay = assay)
+  exp <- GetAssayData(s.bulk, assay = assay)
   expression_matrix <- t(as.matrix(exp))
-  kmeans_result <- kmeans(expression_matrix, centers = num_clusters)
-  return(kmeans_result)
+  kmeans(expression_matrix, centers = num_clusters)
 }
 ```
 
-### 6. Plot K-means Clustering Result
-
-The `plot_kmeans` function visualizes the K-means clustering result.
+### 6. Visualize Clusters
 
 ```r
 plot_kmeans <- function(kmeans_result, expression_matrix) {
-  return(fviz_cluster(kmeans_result, data = expression_matrix, stand = FALSE))
+  fviz_cluster(kmeans_result, data = expression_matrix, stand = FALSE)
 }
 ```
 
-### 7. Calculate and Plot Heatmap
-
-The `plot_heatmap` function generates a heatmap of the correlation matrix.
+### 7. Correlation Heatmap
 
 ```r
 plot_heatmap <- function(s.bulk, assay = "RNA") {
   distance_matrix <- dist(t(s.bulk@assays[[assay]]@scale.data), method = "euclidean")
   correlation_matrix <- 1 - as.matrix(distance_matrix)
-  heatmap(correlation_matrix, 
-          Colv = TRUE,   
-          Rowv = TRUE,   
+  heatmap(correlation_matrix,
+          Colv = TRUE,
+          Rowv = TRUE,
           col = colorRampPalette(c("blue", "white", "red"))(100),
           scale = "none",
           main = "Correlation Heatmap of RNA data")
 }
 ```
 
-### 8. Run PCA and Print Variance
-
-The `run_pca` function performs PCA and prints the variance explained by the first two principal components.
+### 8. PCA Analysis
 
 ```r
 run_pca <- function(correlation_matrix) {
@@ -160,8 +169,9 @@ run_pca <- function(correlation_matrix) {
   variance_explained <- pca_result$sdev^2 / sum(pca_result$sdev^2)
   cat("Variance explained by PC1:", variance_explained[1], "\n")
   cat("Variance explained by PC2:", variance_explained[2], "\n")
-  return(list(pc_scores = pc_scores, variance_explained = variance_explained))
+  list(pc_scores = pc_scores, variance_explained = variance_explained)
 }
 ```
 
- 
+---
+
