@@ -55,6 +55,7 @@ This repository contains an automated pipeline for pseudobulk analysis and downs
     ```sh
     Rscript main.R
     ```
+```
 
 
 ### 1. Load Data
@@ -65,7 +66,7 @@ The `load_data` function reads the Seurat object from the specified file path.
 load_data <- function(file_path) {
   return(readRDS(file_path))
 }
-```
+
 
 ### 2. Prepare Data
 
